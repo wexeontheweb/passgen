@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PassGen Pro - Twój Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0216;
+            --card-bg: rgba(30, 20, 45, 0.7);
+            --accent-purple: #c042ff;
+            --accent-green: #00ff88;
+            --accent-yellow: #ffcc00;
+            --accent-red: #ff4d4d;
+            --text-main: #ffffff;
+            --text-muted: #8b819b;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1a0830 0%, #0d0216 100%);
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { width: 100%; max-width: 420px; text-align: center; padding: 20px; }
+        
+        .icon-box {
+            background: linear-gradient(135deg, #7b2ff7, #c042ff);
+            width: 50px; height: 50px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 15px; box-shadow: 0 0 20px rgba(192, 66, 255, 0.4);
+        }
+
+        h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 30px; }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px; padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .password-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px; padding: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; border: 1px solid rgba(192, 66, 255, 0.2);
+            min-height: 24px;
+        }
+
+        #password-output {
+            font-family: 'Courier New', monospace;
+            font-size: 18px; color: var(--text-main);
+            word-break: break-all; text-align: left;
+            opacity: 0.6;
+        }
+
+        .copy-btn { color: var(--text-muted); cursor: pointer; background: none; border: none; transition: 0.3s; padding: 5px; }
+        .copy-btn:hover { color: var(--accent-purple); transform: scale(1.1); }
+
+        .strength-container { text-align: left; margin-bottom: 25px; }
+        .label-row { display: flex; justify-content: space-between; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+        .strength-bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05); transition: 0.4s ease; }
+
+        .slider-section { text-align: left; margin-bottom: 25px; }
+        input[type=range] { width: 100%; margin: 15px 0; accent-color: var(--accent-purple); cursor: pointer; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .option-item {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+            transition: 0.3s;
+        }
+        .option-item:hover { background: rgba(255, 255, 255, 0.06); }
+
+        /* Switch UI */
+        .switch { position: relative; width: 34px; height: 18px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--accent-purple); box-shadow: 0 0 10px rgba(192, 66, 255, 0.4); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        .btn-generate {
+            width: 100%; padding: 15px; border: none; border-radius: 12px;
+            background: linear-gradient(90deg, #9d3eff, #e05cff);
+            color: white; font-weight: 600; cursor: pointer; transition: 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(192, 66, 255, 0.4); }
+        .btn-generate:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-section">
+        <div class="icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h1>PassGen</h1>
+        <p class="subtitle">Generator bezpiecznych haseł</p>
+    </div>
+
+    <div class="card">
+        <div class="password-display">
+            <div id="password-output">Skonfiguruj hasło...</div>
+            <button class="copy-btn" onclick="copyPassword()" title="Kopiuj">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+        </div>
+
+        <div class="strength-container">
+            <div class="label-row">
+                <span style="color: var(--text-muted)">Siła hasła</span>
+                <span id="strength-text">Brak danych</span>
+            </div>
+            <div class="strength-bars" id="strength-bars">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+        </div>
+
+        <div class="slider-section">
+            <div class="label-row">
+                <span>Długość hasła</span>
+                <span style="color: var(--accent-purple); font-size: 16px;"><span id="length-val">6</span> <small>znaków</small></span>
+            </div>
+            <input type="range" id="length-slider" min="6" max="50" value="6">
+        </div>
+
+        <div class="options-grid">
+            <div class="option-item"><span>A Wielkie</span><label class="switch"><input type="checkbox" id="upper" onchange="generatePassword()"><span class="slider"></span></label></div>
+            <div class="option-item"><span>a Małe</span><label class="switch"><input type="checkbox" id="lower" onchange="generatePassword()"><span class="slider"></span></label></div>
+            <div class="option-item"><span>1 Cyfry</span><label class="switch"><input type="checkbox" id="numbers" onchange="generatePassword()"><span class="slider"></span></label></div>
+            <div class="option-item"><span>! Symbole</span><label class="switch"><input type="checkbox" id="symbols" onchange="generatePassword()"><span class="slider"></span></label></div>
+        </div>
+
+        <button class="btn-generate" onclick="generatePassword()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Generuj nowe
+        </button>
+    </div>
+</div>
+
+<script>
+    const lengthSlider = document.getElementById('length-slider');
+    const lengthVal = document.getElementById('length-val');
+    const passwordOutput = document.getElementById('password-output');
+    const strengthText = document.getElementById('strength-text');
+    const bars = document.querySelectorAll('.bar');
+
+    const chars = {
+        upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        lower: "abcdefghijklmnopqrstuvwxyz",
+        numbers: "0123456789",
+        symbols: "!@#$%^&*()_+-=;:,.<>?"
+    };
+
+    lengthSlider.addEventListener('input', () => {
+        lengthVal.innerText = lengthSlider.value;
+        generatePassword();
+    });
+
+    function generatePassword() {
+        let allowedChars = "";
+        const useUpper = document.getElementById('upper').checked;
+        const useLower = document.getElementById('lower').checked;
+        const useNumbers = document.getElementById('numbers').checked;
+        const useSymbols = document.getElementById('symbols').checked;
+
+        if(useUpper) allowedChars += chars.upper;
+        if(useLower) allowedChars += chars.lower;
+        if(useNumbers) allowedChars += chars.numbers;
+        if(useSymbols) allowedChars += chars.symbols;
+
+        if(allowedChars === "") {
+            passwordOutput.innerText = "Wybierz opcje poniżej";
+            passwordOutput.style.opacity = "0.4";
+            resetStrength();
+            return;
+        }
+
+        let password = "";
+        for(let i = 0; i < lengthSlider.value; i++) {
+            password += allowedChars.charAt(Math.floor(Math.random() * allowedChars.length));
+        }
+
+        passwordOutput.innerText = password;
+        passwordOutput.style.opacity = "1";
+        updateStrength(password);
+    }
+
+    function updateStrength(pass) {
+        let score = 0;
+        if(pass.length >= 8) score++;
+        if(pass.length >= 12) score++;
+        // Sprawdzanie różnorodności
+        let variety = 0;
+        if(/[a-z]/.test(pass)) variety++;
+        if(/[A-Z]/.test(pass)) variety++;
+        if(/[0-9]/.test(pass)) variety++;
+        if(/[^A-Za-z0-9]/.test(pass)) variety++;
+        
+        if(variety >= 3) score++;
+        if(pass.length >= 16 && variety >= 4) score++;
+
+        const colors = ['#ff4d4d', '#ffcc00', '#00ff88', '#00ff88'];
+        const labels = ["Bardzo słabe", "Średnie", "Dobre", "Bardzo Silne"];
+        
+        strengthText.innerText = labels[score - 1] || "Słabe";
+        strengthText.style.color = colors[score - 1] || colors[0];
+
+        bars.forEach((bar, i) => {
+            if(i < score) {
+                bar.style.background = colors[score-1];
+                bar.style.boxShadow = `0 0 10px ${colors[score-1]}66`;
+            } else {
+                bar.style.background = "rgba(255,255,255,0.05)";
+                bar.style.boxShadow = "none";
+            }
+        });
+    }
+
+    function resetStrength() {
+        strengthText.innerText = "Brak danych";
+        strengthText.style.color = "var(--text-muted)";
+        bars.forEach(bar => {
+            bar.style.background = "rgba(255,255,255,0.05)";
+            bar.style.boxShadow = "none";
+        });
+    }
+
+    function copyPassword() {
+        const text = passwordOutput.innerText;
+        if(text.includes("Wybierz") || text.includes("Skonfiguruj")) return;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = passwordOutput.innerText;
+            passwordOutput.innerText = "SKOPIOWANO!";
+            setTimeout(() => passwordOutput.innerText = originalText, 1000);
+        });
+    }
+
+    // Wywołaj na starcie, żeby ustawić stan pusty
+    generatePassword();
+</script>
+
+</body>
+</html>
